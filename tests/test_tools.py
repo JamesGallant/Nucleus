@@ -2,7 +2,7 @@ import unittest
 import shutil
 import os
 
-from utils import tools
+from src.python.utils import tools
 
 class RenameTest:
 	def __init__(self, filecount):
@@ -33,13 +33,13 @@ class RenameTest:
 
 
 
-
-
 class Testrunner(unittest.TestCase):
-	def test_rename1(self):
+	def test_rename(self):
 		Rename = RenameTest(filecount=10)
 		correct_names = [f"000{items}.png" for items in range(10)]
 		self.assertEqual(Rename.main(), correct_names)
+
+
 		
 if __name__ == '__main__':
 	unittest.main()
