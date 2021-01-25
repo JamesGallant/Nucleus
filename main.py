@@ -1,9 +1,8 @@
 import qdarkstyle
 import sys, os
-import cv2
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from src.python.hooks.predict import Masks
+#from src.python.hooks.predict import Masks
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
@@ -122,15 +121,10 @@ class MainWindow(QtWidgets.QMainWindow):
 			QtWidgets.QMessageBox.about(self, "Error", f"Please choose one of the following formats: {[items for items in self.accepted_formats]}")
 			return None
 		
-		image_base = cv2.imread(file_path)
-		image_mask = cv2.imread(file_path)
-
-		base_image_display = QtGui.QImage(image_base.data, image_base.shape[1], image_base.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped()
+		pixmap = QtGui.QPixmap(file_path)
 	
-		mask_image_display = QtGui.QImage(image_mask.data, image_mask.shape[1], image_mask.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped()
-	
-		self.image_holder_base.setPixmap(QtGui.QPixmap.fromImage(base_image_display))
-		self.image_holder_mask.setPixmap(QtGui.QPixmap.fromImage(mask_image_display))
+		self.image_holder_base.setPixmap(pixmap)
+		self.image_holder_mask.setPixmap(pixmap)
 
 
 	def predict_mask(self):
