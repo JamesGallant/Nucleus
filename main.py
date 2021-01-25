@@ -1,8 +1,10 @@
 import qdarkstyle
 import sys, os
+import cv2
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-#from src.python.hooks.predict import Masks
+from src.python.hooks.predict import Masks
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
@@ -14,11 +16,19 @@ class MainWindow(QtWidgets.QMainWindow):
 			os.makedirs(os.path.join(self.root, "data", "val"), exist_ok=True)
 			os.makedirs(os.path.join(self.root, "data", "test"), exist_ok=True)
 
+		if "models" not in os.listdir(self.root):
+			os.mkdir(os.path.join(self.root, "models"))
+
+
+		self.out_dir = os.path.join(self.root, "models")
+		
 		self.gui_metadata = {
 		"current_image": None,
 		"placeholder1": os.path.join(self.root, "src", "resources", "placeholder1.png"),
 		"placeholder2": os.path.join(self.root, "src", "resources", "placeholder2.png")
 		}
+
+		self.models = ["COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"]
 
 		self.accepted_formats = [".png", ".tiff", ".jpeg", ".jpg"]
 		self.initiateUI()
@@ -44,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.progressbar.setValue(0)
 		self.statusBar().addPermanentWidget(self.progressbar)
 
-		self.showMaximized()
+		#self.showMaximized()
 		self.show()
 
 
@@ -90,13 +100,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.image_holder_base.setPixmap(QtGui.QPixmap(self.gui_metadata.get("placeholder1")))
 		self.image_holder_base.setScaledContents(True)
 
-		self.image_holder_mask = QtWidgets.QLabel()
-		self.image_holder_mask.setPixmap(QtGui.QPixmap(self.gui_metadata.get("placeholder2")))
-		self.image_holder_mask.setScaledContents(True)
 		
 		# file browser
 		self.filesystem = QtWidgets.QTreeView()
-		self.filesystem.setFixedSize(680, 1020)
+		#self.filesystem.setFixedSize(680, 800)
 		model = QtWidgets.QFileSystemModel()
 		model.setRootPath(os.path.join(self.root, "data"))
 		self.filesystem.setModel(model)
@@ -105,7 +112,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		
 		grid.addWidget(self.filesystem, 0,0,0,1)
 		grid.addWidget(self.image_holder_base, 0,1)
-		grid.addWidget(self.image_holder_mask, 1,1)
 		groupBox.setLayout(grid)
 
 		return groupBox
@@ -122,15 +128,30 @@ class MainWindow(QtWidgets.QMainWindow):
 			return None
 		
 		pixmap = QtGui.QPixmap(file_path)
+		pixmap2 = pixmap.scaledToWidth(800)
+		pixmap3 = pixmap.scaledToHeight(700)
+		pixmap5 = pixmap.scaled(800, 700, QtCore.Qt.KeepAspectRatio)
+		
 	
-		self.image_holder_base.setPixmap(pixmap)
-		self.image_holder_mask.setPixmap(pixmap)
+		self.image_holder_base.setPixmap(pixmap5)
 
 
 	def predict_mask(self):
+		# perform operation in thread
 		image = self.gui_metadata.get("current_image")
-		mask = Masks(image=image)
-		cv2.imshow(mask.get_image()[:, :, ::-1])
+		mask = Masks(image=image, out_dir=self.out_dir, model = self.models[0])
+		predicted_mask = mask.predict()
+		image = predicted_mask.get_image()
+		height, width, channel = image.shape
+		bytesPerLine = 3 * width
+		qImg = QtGui.QImage(image.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+		pixmap = QtGui.QPixmap(qImg)
+		pixmap2 = pixmap.scaledToWidth(800)
+		pixmap3 = pixmap.scaledToHeight(700)
+		pixmap5 = pixmap.scaled(800, 700, QtCore.Qt.KeepAspectRatio)
+		self.image_holder_base.setPixmap(pixmap5)
+		
+		
 
 
 
