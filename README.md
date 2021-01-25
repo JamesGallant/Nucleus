@@ -1,6 +1,10 @@
 # Nucleus
 Computer vision project using Facebook's detectron2 API in a PyQt5 interface. The idea is to create a GUI to interact with detectron2, this works on linux
 
+<div>
+  <img src="app.gif">
+</div>
+
 # Install the dependencies
 
 Install python > 3.6 and pytorch from their [website](https://pytorch.org/) choose the version that works for you. For gpu support you need cuda
